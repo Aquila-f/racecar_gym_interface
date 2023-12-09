@@ -1,0 +1,3 @@
+[submodule "racecar_gym_competition_env"]
+	path = racecar_gym_competition_env
+	url = git@github.com:LiaoWC/racecar_gym_competition_env.git
