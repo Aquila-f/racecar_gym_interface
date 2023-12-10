@@ -11,7 +11,8 @@ import io
 import cv2
 
 
-
+from multiprocessing import Process, Manager
+import threading
 
 import base64
 from eventlet import wsgi
@@ -52,7 +53,12 @@ class ServerEnv:
 
         # video status
         self.output_freq = 5
-        self.images = []
+        # self.images = []
+
+        # multiprocessing
+        manager = Manager()
+        self.images = manager.list()
+
 
     def get_obs_img(self):
         # img = self.env.env.force_render(render_mode='rgb_array_birds_eye', width=270, height=270)
@@ -94,13 +100,15 @@ class ServerEnv:
         draw.text((550, 450), f"Score {score:.3f}", fill=(255, 255, 255))
         draw.text((550, 500), f"ID {self.client_sid}", fill=(255, 255, 255))
         img = np.asarray(img)
-        return img
+
+        self.images.append(img)
+        
     
     def record_video(self, filename: str):
         height, width, layers = self.images[0].shape
         # noinspection PyUnresolvedReferences
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        video = cv2.VideoWriter(filename, fourcc, 30, (width, height))
+        video = cv2.VideoWriter(filename, fourcc, 15, (width, height))
         for image in self.images:
             video.write(image)
         cv2.destroyAllWindows()
@@ -130,7 +138,7 @@ class ServerEnv:
             # print(action)
             
             self.obs, _, terminal, self.trunc, info = self.env.step(action)
-        
+            # print(len(self.shared_list))
             
             progress = info['progress']
             lap = int(info['lap'])
@@ -151,8 +159,10 @@ class ServerEnv:
 
 
             if self.step % self.output_freq == 0:
-                img = self.get_img_views()
-                self.images.append(img)
+                p = Process(target=self.get_img_views)
+                p.start()
+            #     img = self.get_img_views()
+            #     self.images.append(img)
 
             self.step += 1
 
@@ -224,26 +234,24 @@ def custom_wsgi_app(env, start_response):
         return app(env, start_response)
 
 def image_to_base64(img_data):
-    if img_data.dtype != np.uint8:
-        img_data = img_data.astype(np.uint8)
-
-    # 将 NumPy 数组转换为 PIL Image
+    # if img_data.dtype != np.uint8:
+    img_data = img_data.astype(np.uint8)
     img = Image.fromarray(img_data)
-
-    # 将 PIL Image 转换为 Base64 字符串
+    
     buffered = io.BytesIO()
-    img.save(buffered, format="JPEG")
+    img.save(buffered, format="PNG")
     img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
     return img_str
+
 
 def send_image():
     while True:
         img_data = server_env.get_obs_img()  # 获取图像数据
         img_base64 = image_to_base64(img_data)  # 转换为 Base64
         sio.emit('new_image', {'image': img_base64})  # 发送到客户端
-        print("send image")
-        eventlet.sleep(0.1)  # 每秒更新一次，可以根据需要调整
-
+        # print("send image")
+        eventlet.sleep(0.2)  # 每秒更新一次，可以根据需要调整
+    
 
 
 def render_realtime_page():
@@ -276,5 +284,12 @@ if __name__ == '__main__':
     MAX_ACCU_TIME = 900
     server_env = ServerEnv(sio)
     eventlet.spawn(send_image)
+    # realtimep = Process(target=send_image)
+    # realtimep.start()
+    
+    
+
     eventlet.wsgi.server(eventlet.listen(('', 5000)), custom_wsgi_app)
+
+
 

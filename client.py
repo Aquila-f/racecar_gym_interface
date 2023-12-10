@@ -32,8 +32,6 @@ def send_act(data):
 @sio.event
 def push_obs(data):
     action_to_take = agent.act(np.array(json.loads(data)))  # Replace with actual action
-    
-
     send_act(action_to_take)
 
 
