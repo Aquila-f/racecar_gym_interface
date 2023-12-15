@@ -1,0 +1,15 @@
+# 3 direction yaml file
+# motor: [-1, 1]
+# steering: [-1, 1]
+0:
+  key: ArrowLeft
+  motor: 0.01
+  steering: -1
+1:
+  key: ArrowUp
+  motor: 0.01
+  steering: 0
+2:
+  key: ArrowRight
+  motor: 0.01
+  steering: 1

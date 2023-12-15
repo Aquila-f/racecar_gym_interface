@@ -1,2 +1,4 @@
 # folder for results
 results/
+config/discrete_action/*.yaml
+!config/discrete_action/example.yaml
