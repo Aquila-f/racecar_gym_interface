@@ -1,4 +1,9 @@
 # folder for results
 results/
+
+# pycache
+__pycache__/
+
+# config files
 config/discrete_action/*.yaml
 !config/discrete_action/example.yaml
