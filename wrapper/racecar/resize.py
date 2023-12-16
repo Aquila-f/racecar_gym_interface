@@ -1,11 +1,10 @@
-from base import BaseWrapper
+from .base import BaseWrapper
 from typing import Union, Tuple
 import gymnasium as gym
 import cv2
 import numpy as np
 
 EnvType = Union[gym.Env, BaseWrapper]
-IntDtype = np.uint8
 
 
 class ResizeWrapper(BaseWrapper):

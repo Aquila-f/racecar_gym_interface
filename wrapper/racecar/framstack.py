@@ -1,4 +1,4 @@
-from base import BaseWrapper
+from .base import BaseWrapper
 from typing import Union
 import gymnasium as gym
 import numpy as np

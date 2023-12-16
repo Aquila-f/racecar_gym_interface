@@ -1,0 +1,14 @@
+{
+    "Resize": {
+        "resize_shape": 64
+    },
+    "GrayScale": {},
+    "FrameStack": {
+        "frame_freq": 25,
+        "n_frame_stack": 3
+    },
+    "EdgeDetection": {},
+    "InitMode": {
+        "init_mode": "random"
+    }
+}

@@ -1,7 +1,6 @@
 from typing import Union
 import gymnasium as gym
 from racecar_gym.env import RaceEnv
-import numpy as np
 
 EnvType = Union[RaceEnv, gym.Env]
 
@@ -13,9 +12,9 @@ class BaseWrapper(gym.Env):
     env: Type[gym.Env]
         The environment to be wrapped. (RaceEnv or Wrapper)
     """
+
     def __init__(self, env: EnvType):
         self.env: EnvType = env
-        print(self.observation_space.shape)
 
     def __getattr__(self, item):
         """Forward the attribute to the wrapped environment."""
@@ -29,3 +28,4 @@ class BaseWrapper(gym.Env):
 
     def render(self, *args, **kwargs):
         return self.env.render()
+    
