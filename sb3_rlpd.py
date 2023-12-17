@@ -1,31 +1,133 @@
 import json
 import importlib
 
+import argparse
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 
+from algo import return_algo_config
+from racecarenv import get_env
+from racecarenv.wrapper import return_wrapper_config
+
+from datetime import datetime
+from pathlib import Path
+import os
+
+import matplotlib.pyplot as plt
 
 def load_algorithm_class(class_name):
     module = importlib.import_module("algo")
     return getattr(module, class_name)
 
-def main(config_path):
-    # Load configuration
-    with open(config_path, 'r') as file:
-        config = json.load(file)
+def generate_default_config():
+    print('Generating default config file...')
+    allconfigs = {}
+    allconfigs['algo'] = return_algo_config()
+    allconfigs['wrappers'] = return_wrapper_config()
+    return allconfigs
 
-    # Dynamically load the algorithm class
-    algo_class = load_algorithm_class(config['algo'])
+def create_file(args: argparse.Namespace):
+    #
+    time_str = datetime.now().strftime('%Y%m%d-%H:%M:%S')
+    exp_name = f'{time_str}_{args.name if args.name is not None else args.scenario}'
+    exp_root = os.path.join('./exp', exp_name)
+    #
+    video_dir = os.path.join(exp_root, 'video')
+    log_dir = os.path.join(exp_root, 'logs')
 
-    vec_eval_env = SubprocVecEnv([lambda: get_env(args) for _ in range(5)])
-    vec_train_env = SubprocVecEnv([lambda: get_env(args) for _ in range(args.n_train)])
+    # Make sure the dirs exists
+    Path(exp_root).mkdir(parents=True, exist_ok=True)
+    Path(video_dir).mkdir(parents=True, exist_ok=True)
+    Path(log_dir).mkdir(parents=True, exist_ok=True)
 
+    # copy the config file to the exp folder
+    os.system(f'cp {args.conf} {exp_root}')
     
 
-    # Create an instance of the algorithm with the specified parameters
-    algorithm_instance = algo_class(**config['parameters'])
-    print(algorithm_instance.name())
 
-    # ... rest of your main logic ...
+def main(args: argparse.Namespace):
+    # Create the experiment folder
+    create_file(args)
+    
+    # Load configuration
+    with open(args.conf, 'r') as file:
+        config = json.load(file)
+
+
+    vec_eval_env = SubprocVecEnv([lambda: get_env(args, config) for _ in range(5)])
+    vec_train_env = SubprocVecEnv([lambda: get_env(args, config) for _ in range(args.n_train)])
+
+    #
+    # eval_callback = CustomEvalRewardShapingCallback(
+    #     reward_shaping_func=get_rew_data,
+    #     eval_env=vec_eval_env,
+    #     n_eval_episodes=5,
+    #     # eval_freq=5000,
+    #     eval_freq=2500,
+    #     # eval_freq=16000,
+    #     log_path=log_dir,
+    #     best_model_save_path=os.path.join(exp_root, 'best_eval_model'),
+    #     deterministic=True)
+    # #
+    # checkpoint_callback = CheckpointCallback(
+    #     save_freq=10000,
+    #     save_path=os.path.join(exp_root, 'checkpoints'),
+    #     name_prefix="checkpoints",
+    #     save_replay_buffer=True,
+    #     save_vecnormalize=True,
+    # )
+
+
+
+    # a = input()
+    # Dynamically load the algorithm class
+    # algo_class = load_algorithm_class(config['algo'])
+
+    # a = input()
+
+    # print(config['wrappers'])
+    # env = get_env(config['wrappers'])
+
+   
+
+
 
 if __name__ == "__main__":
-    main("config.json")
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-gen', action="store_true", help='Generate the default config file.')
+    parser.add_argument('--scenario', type=str, help='The scenario to be used')
+    parser.add_argument('--conf', type=str, help='The path to the configuration file.')
+
+    # Optional
+    parser.add_argument('--eval-path', type=str, default=None, help='The path to the model to be evaluated.')
+    parser.add_argument('--total', type=int, default=9999999999, help='The total number of timesteps to be trained.')
+    parser.add_argument('--n-train', type=int, default=10, help='The number of training environments.')
+    parser.add_argument('--n-eval', type=int, default=5, help='The number of evaluation environments.')
+
+    # parser.add_argument('--debug', action='store_true', help='Whether to use debug mode.')
+    # parser.add_argument('--verbose', action='store_true', help='Whether to use verbose mode.')
+    # parser.add_argument('--seed', type=int, default=1, help='The seed to be used.')
+    parser.add_argument('--name', type=str, default=None, help='Name the folder')
+
+    # ================== Fine Tune ============================
+    parser.add_argument('--finetune-path', '--fp', type=str, default=None,
+                        help='The path to the model to be fine tuned.')
+    
+    args = parser.parse_args()
+
+    
+    # generate the default config file
+    if args.gen:
+        config = generate_default_config()
+        with open("config.json", 'w') as file:
+            json.dump(config, file, indent=4)
+        exit(0)
+
+    # check the scenario and the config file is specified
+    if args.scenario is None or args.conf is None:
+        raise ValueError('Please specify the scenario and the config file.')
+
+    # check the config file is exist
+    if not os.path.exists(args.conf):
+        raise ValueError(f'Config file {args.conf} does not exist.')
+
+    main(args)

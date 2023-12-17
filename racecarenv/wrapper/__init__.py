@@ -12,22 +12,12 @@ from typing import Union
 import gymnasium as gym
 
 import inspect
-import json
-
-classes = [
-    ResizeWrapper,
-    NormalizeWrapper,
-    GrayScaleWrapper ,
-    FrameStackWrapper,
-    EdgeDetectionWrapper,
-    RewardShapingWrapper,
-    InitModeWrapper
-]
 
 
 EnvType = Union[gym.Env, BaseWrapper]
 
-def get_env(env: EnvType, wrapper_conf: dict) -> EnvType:
+def get_wrapper(env: EnvType, wrapper_conf: dict) -> EnvType:    
+    # need to consider the order of wrappers
     if 'InitMode' in wrapper_conf:
         env = InitModeWrapper(env, **wrapper_conf['InitMode'])
     if 'Resize' in wrapper_conf:
@@ -46,31 +36,33 @@ def get_env(env: EnvType, wrapper_conf: dict) -> EnvType:
     
     
 def generate_default_config(cls):
-    # Get the constructor of the class
     constructor = inspect.signature(cls.__init__)
-    
-    # Create a default config dictionary, skipping 'self' and 'env'
     config = {}
     for name, param in constructor.parameters.items():
         if name in ['self', 'env']:
             continue
-
-        # Determine the parameter type as a string
+        
         param_type = str(param.annotation) if param.annotation != inspect.Parameter.empty else 'Any'
-
-        # Use the default value if provided, else use the parameter type as placeholder
         default_value = param.default if param.default != inspect.Parameter.empty else param_type
         config[name] = default_value
-    
-    
     return config
 
 
-def return_wrapper_config(classes: list):
+def return_wrapper_config():
+    # register all wrappers here
+    classes = [
+        ResizeWrapper,
+        NormalizeWrapper,
+        GrayScaleWrapper ,
+        FrameStackWrapper,
+        EdgeDetectionWrapper,
+        RewardShapingWrapper,
+        InitModeWrapper
+    ]
+    
     configs = {}
     for cls in classes:
-        n = cls.__name__
-        n = n.replace("Wrapper", "")
-        configs[n] = generate_default_config(cls)
-
+        class_n = cls.__name__
+        class_n = class_n.replace("Wrapper", "")
+        configs[class_n] = generate_default_config(cls)
     return configs
