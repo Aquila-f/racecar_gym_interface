@@ -1,4 +1,4 @@
-from .base import BaseWrapper
+from ..wrapper.base import BaseWrapper
 from typing import Callable, Dict, Union
 import gymnasium as gym
 EnvType = Union[gym.Env, BaseWrapper]

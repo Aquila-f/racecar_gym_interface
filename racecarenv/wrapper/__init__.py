@@ -4,7 +4,6 @@ from .normalize import NormalizeWrapper
 from .grayscale import GrayScaleWrapper 
 from .framstack import FrameStackWrapper
 from .edgedetection import EdgeDetectionWrapper
-from .rewardshape import RewardShapingWrapper
 from .initmode import InitModeWrapper
 
 
@@ -16,22 +15,15 @@ import inspect
 
 EnvType = Union[gym.Env, BaseWrapper]
 
-def get_wrapper(env: EnvType, wrapper_conf: dict) -> EnvType:    
+def get_wrapper(env: EnvType, wrapper_config: dict) -> EnvType:    
     # need to consider the order of wrappers
-    if 'InitMode' in wrapper_conf:
-        env = InitModeWrapper(env, **wrapper_conf['InitMode'])
-    if 'Resize' in wrapper_conf:
-        env = ResizeWrapper(env, **wrapper_conf['Resize'])
-    if 'GrayScale' in wrapper_conf:
-        env = GrayScaleWrapper(env)
-    if 'EdgeDetection' in wrapper_conf:
-        env = EdgeDetectionWrapper(env)
-    if 'Normalize' in wrapper_conf:
-        env = NormalizeWrapper(env)
-    if 'FrameStack' in wrapper_conf:
-        env = FrameStackWrapper(env, **wrapper_conf['FrameStack'])
-    if 'RewardShaping' in wrapper_conf:
-        env = RewardShapingWrapper(env, **wrapper_conf['RewardShaping'])
+
+    for classname, params in wrapper_config.items():
+        cls = globals().get(classname, None)
+        if cls is None:
+            raise ValueError(f'Cannot find class {classname} in wrapper.')
+        env = cls(env, **params)
+
     return env
     
     
@@ -51,18 +43,17 @@ def generate_default_config(cls):
 def return_wrapper_config():
     # register all wrappers here
     classes = [
+        InitModeWrapper,
         ResizeWrapper,
-        NormalizeWrapper,
         GrayScaleWrapper ,
-        FrameStackWrapper,
         EdgeDetectionWrapper,
-        RewardShapingWrapper,
-        InitModeWrapper
+        NormalizeWrapper,
+        FrameStackWrapper
     ]
     
     configs = {}
     for cls in classes:
         class_n = cls.__name__
-        class_n = class_n.replace("Wrapper", "")
+        # class_n = class_n.replace("Wrapper", "")
         configs[class_n] = generate_default_config(cls)
     return configs
