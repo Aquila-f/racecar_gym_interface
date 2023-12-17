@@ -22,6 +22,24 @@ def load_algorithm_class(class_name):
     module = importlib.import_module("algo")
     return getattr(module, class_name)
 
+def debug(args: argparse.Namespace):
+    # Load configuration
+    with open(args.conf, 'r') as file:
+        config = json.load(file)
+
+    env = get_env(args, config)
+    obs, info = env.reset()
+    for _ in range(100):
+        # action = env.action_space.sample()
+        obs, rewards, dones, truncated, states = env.step((0.01, 1))
+        print(rewards)
+
+    # # subplot all of the frames in the obs and show them
+    for i in range(3+1):
+        plt.subplot(1, 3+1, i+1)
+        plt.imshow(obs[i])
+    plt.show()
+
 def generate_default_config():
     print('Generating default config file...')
     allconfigs = {}
@@ -58,26 +76,6 @@ def main(args: argparse.Namespace):
     # Load configuration
     with open(args.conf, 'r') as file:
         config = json.load(file)
-
-
-    env = get_env(args, config)
-
-    obs, info = env.reset()
-
-
-
-    for _ in range(100):
-        # action = env.action_space.sample()
-        obs, rewards, dones, truncated, states = env.step((0.01, 1))
-        print(rewards)
-
-
-    # # subplot all of the frames in the obs and show them
-    for i in range(3+1):
-        plt.subplot(1, 3+1, i+1)
-        plt.imshow(obs[i])
-    plt.show()
-
 
 
     vec_eval_env = SubprocVecEnv([lambda: get_env(args, config) for _ in range(5)])
@@ -129,14 +127,6 @@ def main(args: argparse.Namespace):
 
 
 
-    # a = input()
-    # Dynamically load the algorithm class
-    # algo_class = load_algorithm_class(config['algo'])
-
-    # a = input()
-
-    # print(config['wrappers'])
-    # env = get_env(config['wrappers'])
 
    
 
@@ -154,7 +144,7 @@ if __name__ == "__main__":
     parser.add_argument('--n-train', type=int, default=10, help='The number of training environments.')
     parser.add_argument('--n-eval', type=int, default=5, help='The number of evaluation environments.')
 
-    # parser.add_argument('--debug', action='store_true', help='Whether to use debug mode.')
+    parser.add_argument('--debug', type=str, default="", help='Whether to use debug mode.')
     parser.add_argument('--verbose', action='store_true', help='Whether to use verbose mode.')
     parser.add_argument('--seed', type=int, default=1, help='The seed to be used.')
     parser.add_argument('--name', type=str, default=None, help='Name the folder')
@@ -180,5 +170,11 @@ if __name__ == "__main__":
     # check the config file is exist
     if not os.path.exists(args.conf):
         raise ValueError(f'Config file {args.conf} does not exist.')
+    
+
+    if args.debug == "env":
+        debug(args)
+        exit(0)
+
 
     main(args)
