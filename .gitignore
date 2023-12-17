@@ -8,7 +8,7 @@ __pycache__/
 # config files
 config/discrete_action/*.yaml
 !config/discrete_action/example.yaml
-.json
+*.json
 
 # exp
 exp/
