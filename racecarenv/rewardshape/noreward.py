@@ -14,6 +14,6 @@ class NoRewardFunc(BaseRewardFunc):
         return 0.
 
     def __call__(self, reward, info):
-        reward = self.reward_func(reward, info)
+        reward, _ = self.reward_func(reward, info)
         reward = self.no_reward(reward, info)
         return reward, self.reward_dict

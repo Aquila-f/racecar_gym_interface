@@ -44,7 +44,6 @@ class DiscretizeActionWrapper(BaseWrapper):
         import yaml
         with open(os.path.join(DiscretizeActionWrapper.DISCRETE_ACTION_DEF_DIR, f'{name}.yaml'), 'r') as f:
             action_config = yaml.load(f, Loader=yaml.FullLoader)
-        print(action_config)
         action_definitions = []
         for act, act_info in action_config.items():
             action_def = ActionDef(act, act_info['motor'], act_info['steering'], act_info['key'])

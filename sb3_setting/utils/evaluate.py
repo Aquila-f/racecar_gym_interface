@@ -115,7 +115,7 @@ def evaluate_policy_with_reward_shaping_func(
         current_rewards += rewards
 
         # Reward shaping
-        rew_name_to_value = [reward_shaping_func(rewards[i], infos[i]) for i in range(n_envs)]
+        rew_name_to_value = [reward_shaping_func(rewards[i], infos[i])[1] for i in range(n_envs)]
         for i in range(n_envs):
             for k, v in rew_name_to_value[i].items():
                 current_each_reward[k][i] += v
@@ -152,8 +152,6 @@ def evaluate_policy_with_reward_shaping_func(
                         episode_lengths.append(current_lengths[i])
 
                         # Append each kind of reward
-                        print(type(current_each_reward))
-                        a = input()
                         for k, v in current_each_reward.items():
                             episode_each_reward[k].append(v[i])
 
