@@ -1,5 +1,6 @@
 # folder for results
 results/
+record/
 
 # pycache
 __pycache__/

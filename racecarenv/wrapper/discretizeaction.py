@@ -3,10 +3,11 @@ from typing import Union, List, Tuple
 import gymnasium as gym
 import os
 import warnings
+from dataclasses import dataclass
 
 EnvType = Union[gym.Env, BaseWrapper]
 
-
+@dataclass
 class ActionDef:
     """Define an action"""
     action: str
@@ -17,6 +18,8 @@ class ActionDef:
     def __repr__(self):
         return f'{self.action}: {self.key} ({self.motor}, {self.steering})'
     
+
+
 
 class DiscretizeActionWrapper(BaseWrapper):
     """Discretize the action space.
@@ -41,16 +44,17 @@ class DiscretizeActionWrapper(BaseWrapper):
         import yaml
         with open(os.path.join(DiscretizeActionWrapper.DISCRETE_ACTION_DEF_DIR, f'{name}.yaml'), 'r') as f:
             action_config = yaml.load(f, Loader=yaml.FullLoader)
+        print(action_config)
         action_definitions = []
         for act, act_info in action_config.items():
             action_def = ActionDef(act, act_info['motor'], act_info['steering'], act_info['key'])
             action_definitions.append(action_def)
         return action_definitions
 
-    def __init__(self, env: EnvType, action_definitions: str = "# config discrete action"):
+    def __init__(self, env: EnvType, action_conf_name: str = "# config discrete action"):
         super().__init__(env)
-        if isinstance(action_definitions, str):  # Load from a file
-            action_definitions = self.load_action_definition(action_definitions)
+        if isinstance(action_conf_name, str):  # Load from a file
+            action_definitions = self.load_action_definition(action_conf_name)
         self.action_definitions: List[ActionDef] = action_definitions
         if isinstance(self.env.action_space, gym.spaces.Discrete):
             warnings.warn(f'The action space is already discrete. '

@@ -32,8 +32,8 @@ def debug(args: argparse.Namespace):
     env = get_env(args, config)
     obs, info = env.reset()
     for _ in range(100):
-        # action = env.action_space.sample()
-        obs, rewards, dones, truncated, states = env.step((0.01, 1))
+        action = env.action_space.sample()
+        obs, rewards, dones, truncated, states = env.step(action)
         print(rewards)
 
     # # subplot all of the frames in the obs and show them
