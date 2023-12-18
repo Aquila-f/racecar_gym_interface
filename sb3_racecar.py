@@ -90,7 +90,7 @@ def main(args: argparse.Namespace):
         eval_env=vec_eval_env,
         n_eval_episodes=args.n_eval,
         # eval_freq=5000,
-        eval_freq=100,
+        eval_freq=5000,
         log_path=log_dir,
         best_model_save_path=os.path.join(exp_root, 'best_eval_model'),
         deterministic=True

@@ -7,13 +7,12 @@ class TestRewardFunc(BaseRewardFunc):
     
     def __init__(self, reward_func: BaseRewardFunc) -> None:
         super().__init__(reward_func)
-        
     
-    def test_reward(self, reward, info):
-        self.reward_dict["test_reward"] = reward+1.
-        return reward+1.
+    def test_reward(self, reward, info, rew_dict):
+        rew_dict["test_reward"] = reward+1.
+        return reward+1., rew_dict
 
     def __call__(self, reward, info):
-        reward, _ = self.reward_func(reward, info)
-        reward = self.test_reward(reward, info)
-        return reward, self.reward_dict
+        reward, rew_dict = self.reward_func(reward, info)
+        reward, rew_dict = self.test_reward(reward, info, rew_dict)
+        return reward, rew_dict
