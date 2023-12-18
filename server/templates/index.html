@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="60">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        #image-slider {
+            width: 80%;
+            margin-top: 20px;
+        }
+
+        #image-display {
+            max-width: 100%;
+            height: auto;
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #image-info {
+            margin-top: 10px;
+            color: #666;
+        }
+
+        #total-images {
+            margin-top: 10px;
+            color: #666;
+        }
+    </style>
+    <script>
+        function showImage(index) {
+            var images = {{ image_list|tojson|safe }};
+            var imgElement = document.getElementById('image-display');
+            imgElement.src = "{{ url_for('get_image', filename='') }}" + images[index];
+    
+            // 顯示目前是第幾張圖片
+            var imageInfoElement = document.getElementById('current-image');
+            imageInfoElement.textContent = index;
+        }
+    
+        function updateImage() {
+            var slider = document.getElementById('image-slider');
+            showImage(slider.value);
+        }
+    
+        window.onload = function () {
+            showImage(0);
+        };
+    </script>
+</head>
+<body>
+    <h1>Image Viewer {{ model_file }}</h1>
+    
+    <p id="image-info">Image <span id="current-image"></span> of {{ num_images }}</p>
+    <div>
+        <img id="image-display" src="{{ url_for('get_image', filename='') }}" alt="Selected Image">
+    </div>
+
+    <input type="range" id="image-slider" min="0" max="{{ num_images - 1 }}" step="1" value="0" oninput="updateImage()">
+    
+</body>
+</html>
