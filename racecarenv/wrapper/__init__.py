@@ -5,7 +5,8 @@ from .grayscale import GrayScaleWrapper
 from .framstack import FrameStackWrapper
 from .edgedetection import EdgeDetectionWrapper
 from .initmode import InitModeWrapper
-
+from .discretizeaction import DiscretizeActionWrapper
+from .saveinfo import SaveInfoWrapper
 
 from typing import Union
 import gymnasium as gym
@@ -48,7 +49,9 @@ def return_wrapper_config():
         GrayScaleWrapper ,
         EdgeDetectionWrapper,
         NormalizeWrapper,
-        FrameStackWrapper
+        FrameStackWrapper,
+        DiscretizeActionWrapper,
+        SaveInfoWrapper
     ]
     
     configs = {}
