@@ -15,5 +15,5 @@ class RewardShapingWrapper(BaseWrapper):
 
     def step(self, action):
         obs, reward, done, trunc, info = self.env.step(action)
-        reward = self.reward_shaping_func(float(reward), info)
+        reward, _ = self.reward_shaping_func(float(reward), info)
         return obs, reward, done, trunc, info

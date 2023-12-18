@@ -10,9 +10,10 @@ class TestRewardFunc(BaseRewardFunc):
         
     
     def test_reward(self, reward, info):
+        self.reward_dict["test_reward"] = reward+1.
         return reward+1.
 
     def __call__(self, reward, info):
         reward = self.reward_func(reward, info)
         reward = self.test_reward(reward, info)
-        return reward
+        return reward, self.reward_dict

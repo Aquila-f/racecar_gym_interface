@@ -152,6 +152,8 @@ def evaluate_policy_with_reward_shaping_func(
                         episode_lengths.append(current_lengths[i])
 
                         # Append each kind of reward
+                        print(type(current_each_reward))
+                        a = input()
                         for k, v in current_each_reward.items():
                             episode_each_reward[k].append(v[i])
 

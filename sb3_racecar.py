@@ -6,6 +6,8 @@ from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 
 from algo import return_algo_config
 from racecarenv import get_env
+from algo import get_algo
+from racecarenv.rewardshape import get_rewardshaping_func
 from racecarenv.wrapper import return_wrapper_config
 from racecarenv.rewardshape import return_rewardfunc_config
 
@@ -83,16 +85,16 @@ def main(args: argparse.Namespace):
 
     print("vec_eval_ok")
 
-
     eval_callback = CustomEvalRewardShapingCallback(
-        reward_shaping_func=None,
+        reward_shaping_func=get_rewardshaping_func(config['rewardfuncs']),
         eval_env=vec_eval_env,
         n_eval_episodes=args.n_eval,
         # eval_freq=5000,
-        eval_freq=5000,
+        eval_freq=100,
         log_path=log_dir,
         best_model_save_path=os.path.join(exp_root, 'best_eval_model'),
-        deterministic=True)
+        deterministic=True
+    )
     #
     checkpoint_callback = CheckpointCallback(
         save_freq=10000,
@@ -111,9 +113,7 @@ def main(args: argparse.Namespace):
         tensorboard_log=log_dir,
     )
 
-    model_cls = load_algorithm_class(config['algo']['class_name'])
-    print(model_cls.__name__)
-    a = input()
+    model = None
 
     if args.finetune_path is not None:
             general_alg_kwargs['n_steps'] = 40960
@@ -121,16 +121,20 @@ def main(args: argparse.Namespace):
             general_alg_kwargs['ent_coef'] = 0.001
             general_alg_kwargs['clip_range'] = 0.05
 
-            model = model_cls.load(args.finetune_path, **general_alg_kwargs)
+            # model = model_cls.load(args.finetune_path, **general_alg_kwargs)
     else:
-        print("12312")
+        model = get_algo(config['algo'], general_alg_kwargs)
 
+    model.learn(total_timesteps=args.total,
+                    log_interval=2,
+                    progress_bar=True,
+                    callback=CallbackList([eval_callback, checkpoint_callback]))
+
+    model.save(os.path.join(exp_root, 'last_model'))
 
 
 
    
-
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

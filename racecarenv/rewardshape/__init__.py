@@ -1,3 +1,4 @@
+# register all reward shaping function here
 from .base import BaseRewardFunc
 from .test import TestRewardFunc
 from .noreward import NoRewardFunc
@@ -12,7 +13,15 @@ import gymnasium as gym
 
 EnvType = Union[gym.Env, BaseWrapper]
 
-def get_rewardshaping_func(env: EnvType, rewardfunc_config: dict) -> EnvType:
+
+
+def get_rewardshaping_wrapper(env: EnvType, rewardfunc_config: dict) -> EnvType:
+    reward_func = get_rewardshaping_func(rewardfunc_config)
+    env = RewardShapingWrapper(env, reward_func)
+    return env
+
+
+def get_rewardshaping_func(rewardfunc_config: dict):
     # need to consider the order of rewardfuncs
     reward_func = BaseRewardFunc()
 
@@ -22,10 +31,7 @@ def get_rewardshaping_func(env: EnvType, rewardfunc_config: dict) -> EnvType:
             raise ValueError(f'Cannot find class {classname} in rewardshape.')
         reward_func = cls(reward_func, **params)
 
-    
-    env = RewardShapingWrapper(env, reward_func)
-    return env
-
+    return reward_func
 
 
 
