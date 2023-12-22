@@ -2,7 +2,10 @@
 from .base import BaseRewardFunc
 from .test import TestRewardFunc
 from .noreward import NoRewardFunc
+from .distance import DistanceRewardFunc
+from .speed import SpeedRewardFunc
 from .rewardshapeWrapper import RewardShapingWrapper
+
 
 import inspect
 from typing import Union
@@ -52,7 +55,9 @@ def return_rewardfunc_config():
     # register all reward shaping function here
     classes = [
         TestRewardFunc,
-        NoRewardFunc
+        NoRewardFunc,
+        DistanceRewardFunc,
+        SpeedRewardFunc
     ]
     
     configs = {}
