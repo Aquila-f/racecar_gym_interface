@@ -20,9 +20,40 @@ from stable_baselines3.common.callbacks import CheckpointCallback, CallbackList
 
 import matplotlib.pyplot as plt
 
-def load_algorithm_class(class_name):
-    module = importlib.import_module("algo")
-    return getattr(module, class_name)
+def evaluation_client(args):
+    if not args.eport: raise ValueError('Please specify the server ip address.')
+    if not args.epath: raise ValueError('Please specify the eval model path.')
+
+    with open(args.conf, 'r') as file:
+        config = json.load(file)
+    
+    args.scenario = "austria_competition"
+    env = get_env(args, config)
+
+    model = get_algo(config['algo'])
+    model = model.load(args.epath)
+
+
+    # evaluation info
+    print("===== Evaluation Info =====")
+    print(f"Scenario: {args.scenario}")
+    print(f"Server IP: {args.eport}")
+    print(f"Model Path: {args.epath}")
+    print(f"Evaluation Config: {args.conf}")
+    print("===========================\n\n")
+
+    # count down 3 seconds
+    import time
+    for i in range(3):
+        print(f"Start evaluation in {3-i} seconds...")
+        time.sleep(1)
+
+    print("===== Start Evaluation =====")
+    from stable_baselines3.common.evaluation import evaluate_policy
+    _, _ = evaluate_policy(model, env, n_eval_episodes=1)
+    print("===== Evaluation Done =====")
+    exit(0)
+
 
 def debug(args: argparse.Namespace):
     # Load configuration
@@ -31,10 +62,25 @@ def debug(args: argparse.Namespace):
 
     env = get_env(args, config)
     obs, info = env.reset()
-    for _ in range(100):
+    print(obs.shape)
+
+    while True:
         action = env.action_space.sample()
-        obs, rewards, dones, truncated, states = env.step(action)
+        
+        obs, rewards, dones, truncated, states = env.step((1, 0))
+
+        if 'minlidar' in states:
+            print(states['minlidar'], states['obstacle'])
+        else:
+            print(states["velocity"])
+        
+        # print(states)
         print(rewards)
+        obs_ = obs.transpose(1, 2, 0)
+        plt.imshow(obs_)
+        plt.show()
+        if dones:
+            break
 
     # # subplot all of the frames in the obs and show them
     for i in range(3+1):
@@ -53,7 +99,7 @@ def generate_default_config():
 def create_file(args: argparse.Namespace):
     #
     time_str = datetime.now().strftime('%Y%m%d-%H:%M:%S')
-    exp_name = f'{time_str}_{args.name if args.name is not None else args.scenario}'
+    exp_name = f'{time_str}_{args.savename if args.savename is not None else args.scenario}'
     exp_root = os.path.join('./exp', exp_name)
     #
     video_dir = os.path.join(exp_root, 'video')
@@ -72,13 +118,15 @@ def create_file(args: argparse.Namespace):
 
 
 def main(args: argparse.Namespace):
+    if args.epath: evaluation_client(args)
+
     # Create the experiment folder
     exp_root, log_dir, video_dir = create_file(args)
     
     # Load configuration
     with open(args.conf, 'r') as file:
         config = json.load(file)
-
+    
 
     vec_eval_env = SubprocVecEnv([lambda: get_env(args, config) for _ in range(5)])
     vec_train_env = SubprocVecEnv([lambda: get_env(args, config) for _ in range(args.n_train)])
@@ -143,7 +191,6 @@ if __name__ == "__main__":
     parser.add_argument('--conf', type=str, help='The path to the configuration file.')
 
     # Optional
-    parser.add_argument('--eval-path', type=str, default=None, help='The path to the model to be evaluated.')
     parser.add_argument('--total', type=int, default=9999999999, help='The total number of timesteps to be trained.')
     parser.add_argument('--n-train', type=int, default=10, help='The number of training environments.')
     parser.add_argument('--n-eval', type=int, default=5, help='The number of evaluation environments.')
@@ -151,7 +198,11 @@ if __name__ == "__main__":
     parser.add_argument('--debug', type=str, default="", help='Whether to use debug mode.')
     parser.add_argument('--verbose', action='store_true', help='Whether to use verbose mode.')
     parser.add_argument('--seed', type=int, default=1, help='The seed to be used.')
-    parser.add_argument('--name', type=str, default=None, help='Name the folder')
+    parser.add_argument('--savename', type=str, default=None, help='Name the folder')
+
+    # ================== Evaluation ============================
+    parser.add_argument('--eport',  type=str, default=None, help='The path to the model to be evaluated.')
+    parser.add_argument('--epath', type=str, default=None, help='Pass the client ip address.')
 
     # ================== Fine Tune ============================
     parser.add_argument('--finetune-path', '--fp', type=str, default=None,
@@ -175,7 +226,7 @@ if __name__ == "__main__":
     if not os.path.exists(args.conf):
         raise ValueError(f'Config file {args.conf} does not exist.')
     
-
+    # check the scenario is exist
     if args.debug == "env":
         debug(args)
         exit(0)

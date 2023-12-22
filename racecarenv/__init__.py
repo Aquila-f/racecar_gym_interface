@@ -4,7 +4,7 @@ from .rewardshape import get_rewardshaping_wrapper
 
 
 def get_env(args, conf, **kwargs):
-    if args.name and 'SaveInfoWrapper' in conf["wrappers"]: conf["wrappers"]["SaveInfoWrapper"]["save_pos_folder_name"] = args.name
+    if args.savename and 'SaveInfoWrapper' in conf["wrappers"]: conf["wrappers"]["SaveInfoWrapper"]["save_pos_folder_name"] = args.savename
     env = RaceEnv(scenario=args.scenario,
                   reset_when_collision=False if 'collisionStop' in args.scenario else True,
                   **kwargs,)

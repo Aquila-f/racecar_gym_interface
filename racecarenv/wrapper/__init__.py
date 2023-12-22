@@ -7,6 +7,7 @@ from .edgedetection import EdgeDetectionWrapper
 from .initmode import InitModeWrapper
 from .discretizeaction import DiscretizeActionWrapper
 from .saveinfo import SaveInfoWrapper
+from .client import ClientWrapper
 
 from typing import Union
 import gymnasium as gym
@@ -16,9 +17,9 @@ import inspect
 
 EnvType = Union[gym.Env, BaseWrapper]
 
-def get_wrapper(env: EnvType, wrapper_config: dict) -> EnvType:    
+def get_wrapper(env: EnvType, wrapper_config: dict, eval_port: str = None) -> EnvType:    
     # need to consider the order of wrappers
-
+    if eval_port: env = ClientWrapper(env, eval_port)
     for classname, params in wrapper_config.items():
         cls = globals().get(classname, None)
         if cls is None:
@@ -44,6 +45,7 @@ def generate_default_config(cls):
 def return_wrapper_config():
     # register all wrappers here
     classes = [
+        ClientWrapper,
         InitModeWrapper,
         ResizeWrapper,
         GrayScaleWrapper ,
