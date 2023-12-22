@@ -1,13 +1,15 @@
 # register your algo here
-from .example_ppo.example_ppo import CustomPPO
+from .example_ppo.example_ppo import ExamplePPO
+from .custom_ppo.custom_ppo import CustomPPO
 
 
-def get_algo(algo_config: dict, general_alg_kwargs: dict):
+def get_algo(algo_config: dict, general_alg_kwargs: dict = None):
     classname = algo_config['algo']
     cls = globals().get(classname, None)
     if cls is None:
         raise ValueError(f'Cannot find class "{classname}" in policy.')
-    
+    if general_alg_kwargs is None: return cls
+
     kwargs = algo_config['parameters']
     policy = cls(**kwargs, **general_alg_kwargs)
     return policy
