@@ -37,7 +37,8 @@ class ResizeWrapper(BaseWrapper):
             obs_ = obs_.astype(np.uint8)
 
         obs_ = cv2.resize(obs_, resize_shape, interpolation=cv2.INTER_AREA)
-        obs_ = obs_.transpose(2, 0, 1)
+        if len(obs_.shape) == 2: obs_ = np.expand_dims(obs_, axis=0)
+        else: obs_ = obs_.transpose(2, 0, 1)
         
         if convert: obs_ = obs_.astype(original_dtype)
         return obs_

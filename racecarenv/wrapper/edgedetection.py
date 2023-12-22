@@ -35,7 +35,7 @@ class EdgeDetectionWrapper(BaseWrapper):
             original_dtype = obs_.dtype
             obs_ = obs_.astype(np.uint8)
         
-        obs_ = cv2.Canny(obs_, 200, 250)
+        obs_ = cv2.Canny(obs_, 36, 36)
         obs_ = np.expand_dims(obs_, axis=0)
     
         
