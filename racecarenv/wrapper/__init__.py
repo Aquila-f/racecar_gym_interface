@@ -1,4 +1,5 @@
 from .base import BaseWrapper
+from .frameskip import FrameSkipWrapper
 from .resize import ResizeWrapper
 from .normalize import NormalizeWrapper
 from .grayscale import GrayScaleWrapper 
@@ -45,20 +46,19 @@ def generate_default_config(cls):
 def return_wrapper_config():
     # register all wrappers here
     classes = [
-        ClientWrapper,
         InitModeWrapper,
+        SaveInfoWrapper,
+        FrameSkipWrapper,
         ResizeWrapper,
         GrayScaleWrapper ,
         EdgeDetectionWrapper,
         NormalizeWrapper,
         FrameStackWrapper,
-        DiscretizeActionWrapper,
-        SaveInfoWrapper
+        DiscretizeActionWrapper
     ]
     
     configs = {}
     for cls in classes:
         class_n = cls.__name__
-        # class_n = class_n.replace("Wrapper", "")
         configs[class_n] = generate_default_config(cls)
     return configs

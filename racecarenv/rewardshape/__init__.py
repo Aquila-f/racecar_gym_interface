@@ -4,6 +4,7 @@ from .test import TestRewardFunc
 from .noreward import NoRewardFunc
 from .distance import DistanceRewardFunc
 from .speed import SpeedRewardFunc
+from .collision import CollisionRewardFunc
 from .rewardshapeWrapper import RewardShapingWrapper
 
 
@@ -57,7 +58,8 @@ def return_rewardfunc_config():
         TestRewardFunc,
         NoRewardFunc,
         DistanceRewardFunc,
-        SpeedRewardFunc
+        SpeedRewardFunc,
+        CollisionRewardFunc
     ]
     
     configs = {}

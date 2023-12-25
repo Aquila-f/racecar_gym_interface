@@ -12,7 +12,7 @@ class BaseRewardFunc():
         return reward
 
     def __call__(self, reward, info):
-        reward = self.reward_function(reward, info)
+        # reward = self.reward_function(reward, info)
         reward_dict = {}
         reward_dict["original_reward"] = reward
         return reward, reward_dict
