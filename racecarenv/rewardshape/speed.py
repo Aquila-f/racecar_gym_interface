@@ -11,9 +11,16 @@ class SpeedRewardFunc(BaseRewardFunc):
         
     
     def speed_reward(self, reward, info, rew_dict):
+        tmpreward = 0.
         if info['velocity'][0] >= self.speedbonus:
-            rew_dict['speedbonus'] = 0.00005
-            reward += 0.00005
+            tmpreward = 0.000015
+            extrareward = (info['velocity'][0]-self.speedbonus)*0.00001
+            tmpreward += extrareward
+        else:
+            tmpreward = -0.00001
+
+        rew_dict['speedbonus'] = tmpreward
+        reward += tmpreward
         return reward, rew_dict
 
     def __call__(self, reward, info):
