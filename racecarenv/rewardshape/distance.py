@@ -11,9 +11,10 @@ class DistanceRewardFunc(BaseRewardFunc):
         
     
     def distance_reward(self, reward, info, rew_dict):
-        if info['minlidar'] >= self.mindistance:
-            rew_dict['distance'] = 0.0001
-            reward += 0.0001
+        tmpreward = 0.
+        if info['minlidar'] >= self.mindistance: tmpreward = 0.000015
+        rew_dict['distance'] = tmpreward
+        reward += tmpreward
         return reward, rew_dict
 
     def __call__(self, reward, info):
