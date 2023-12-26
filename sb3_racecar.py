@@ -67,20 +67,23 @@ def debug(args: argparse.Namespace):
     while True:
         action = env.action_space.sample()
         
-        obs, rewards, dones, truncated, states = env.step((1, 0))
+        obs, rewards, dones, truncated, states = env.step(action)
 
-        if 'minlidar' in states:
-            print(states['minlidar'], states['obstacle'])
-        else:
-            print(states["velocity"])
+        # if 'minlidar' in states: print(states['minlidar'], states['obstacle'])
+        # else: print(states["obstacle"])
+        
+        if 'prev_velocity' in states: print("[", states['prev_velocity'][0], states['velocity'][0], "]")
+        else: print(states['velocity'][0])
         
         # print(states)
-        print(rewards)
-        obs_ = obs.transpose(1, 2, 0)
-        plt.imshow(obs_)
-        plt.show()
+        
         if dones:
-            break
+            obs, info = env.reset()
+            print(rewards)
+            a = input()
+            obs_ = obs.transpose(1, 2, 0)
+            plt.imshow(obs_)
+            plt.show()
 
     # # subplot all of the frames in the obs and show them
     for i in range(3+1):
@@ -164,12 +167,9 @@ def main(args: argparse.Namespace):
     model = None
 
     if args.finetune_path is not None:
-            general_alg_kwargs['n_steps'] = 40960
-            general_alg_kwargs['learning_rate'] = 1e-4
-            general_alg_kwargs['ent_coef'] = 0.001
-            general_alg_kwargs['clip_range'] = 0.05
-
-            # model = model_cls.load(args.finetune_path, **general_alg_kwargs)
+        # model = get_algo(config['algo'], general_alg_kwargs)
+        model = get_algo(config['algo'])
+        model = model.load(args.finetune_path, **general_alg_kwargs)
     else:
         model = get_algo(config['algo'], general_alg_kwargs)
 
